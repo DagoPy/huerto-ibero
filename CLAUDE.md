@@ -41,7 +41,7 @@ Solo **cálculo de fechas**:
 - **React + TypeScript + Vite**
 - **date-fns** para aritmética de fechas.
 - **Vitest** + Testing Library para pruebas.
-- **ESLint + Prettier** para estilo.
+- **oxlint** para lint (viene con la plantilla actual de Vite).
 - Sin backend. Persistencia en `localStorage`.
 - Despliegue en **GitHub Pages** mediante GitHub Actions.
 - Gestor de paquetes: **npm** (Node 22).
@@ -59,8 +59,8 @@ src/
     planner/         # v1: planeador de fechas
     (irrigation/, bed-guide/, garden-map/ ... a futuro)
   shared/            # Componentes, hooks y utilidades reutilizables
-  storage/           # Persistencia (localStorage, export/import)
-  app/               # Rutas, layout, providers
+  storage/           # (futuro) Persistencia (localStorage, export/import)
+  app/               # Componente raíz; a futuro rutas, layout, providers
 ```
 
 Reglas:
@@ -86,21 +86,24 @@ Reglas:
 
 ## Comandos
 
-> Se definirán al crear el proyecto con Vite. Previstos:
+```
+npm install          # instalar dependencias
+npm run dev          # servidor de desarrollo (http://localhost:5173/huerto-ibero/)
+npm run test         # pruebas en modo watch (Vitest); `npm run test -- --run` una sola vez
+npm run lint         # oxlint
+npm run build        # verificación de tipos + build de producción
+```
 
-```
-npm install        # instalar dependencias
-npm run dev        # servidor de desarrollo
-npm run test       # pruebas (Vitest)
-npm run lint       # ESLint
-npm run build      # build de producción
-```
+`vite.config.ts` usa `base: '/huerto-ibero/'` porque GitHub Pages publica en
+`https://dagopy.github.io/huerto-ibero/`.
 
 ## Estado
 
 - [x] Estructura inicial del repositorio y contexto.
-- [ ] Scaffold de Vite + React + TS.
-- [ ] Modelo de dominio (cultivo, etapas, plan).
-- [ ] Datos de cultivos del libro.
-- [ ] UI del planeador.
+- [x] Scaffold de Vite + React + TS.
+- [x] Modelo de dominio y cálculo de etapas de almácigo ([docs](docs/dominio/calendario-de-siembra.md)).
+- [x] Catálogo de vegetales y hortalizas del libro (tabla de datos de cultivo).
+- [x] UI mínima del planeador.
+- [ ] Composta, preparación de cama y cosecha (faltan datos del libro).
+- [ ] Guardar el plan en localStorage y exportar/importar.
 - [ ] Despliegue en GitHub Pages.

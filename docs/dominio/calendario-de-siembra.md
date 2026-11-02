@@ -1,48 +1,61 @@
 # Calendario de siembra (método biointensivo)
 
-Modelo de dominio para el cálculo de fechas. **Los valores numéricos se completan con
-datos del libro** *Cómo cultivar más vegetales* (John Jeavons). Todo lo marcado como
-`PENDIENTE` debe confirmarse con el libro antes de usarse en la app.
+Modelo de dominio para el cálculo de fechas, basado en la *Tabla de datos de cultivo de
+vegetales y hortalizas* de *Cómo cultivar más vegetales* (John Jeavons).
+
+- Datos: [src/domain/crops/catalog.ts](../../src/domain/crops/catalog.ts)
+- Cálculo: [src/domain/schedule/calculateSchedule.ts](../../src/domain/schedule/calculateSchedule.ts)
 
 ## Fecha ancla
 
-**T = fecha de trasplante a la cama de siembra.** Todas las etapas se expresan como un
-desplazamiento (en días o semanas) respecto a T: negativo = antes, positivo = después.
+**T = fecha de trasplante a la cama de siembra.** Si el cultivo se siembra directo en la
+cama, T es la fecha de siembra directa. Todas las demás fechas se calculan desde T.
 
-## Etapas (borrador)
+## Columnas del libro que se usan
 
-| Etapa | Relación con T | Dato que la define | Fuente |
-|-------|----------------|--------------------|--------|
-| Iniciar pila de composta | T − (tiempo de maduración de composta) | Meses de maduración | PENDIENTE |
-| Siembra en almácigo 1 (semillero) | T − (semanas totales en almácigo) | Semanas en almácigo por cultivo | PENDIENTE |
-| Repique a almácigo 2 | Entre siembra en almácigo 1 y T | Semanas en almácigo 1 | PENDIENTE |
-| Preparación de cama (doble excavación + composta) | T − (pocos días) | Días antes del trasplante | PENDIENTE |
-| Trasplante a la cama | **T** | — | — |
-| Inicio de cosecha | T + (días a madurez desde trasplante) | Días a madurez | PENDIENTE |
-| Fin de cosecha | Inicio de cosecha + duración | Duración de cosecha | PENDIENTE |
+| Columna | Significado | Uso en la app |
+|---------|-------------|---------------|
+| D | Tiempo de germinación (TE / TA / MT) | `germination` (informativo) |
+| E | Almácigo o directo en la cama | `methods` |
+| H | Semanas en el primer almácigo | `flat1` |
+| L | Semanas en el segundo almácigo | `flat2` |
+| M | Distancia entre plantas en la cama (cm) | `bedSpacingCm` (uso futuro) |
 
-Notas:
-- Algunos cultivos **se siembran directo** en la cama (sin almácigo). Para ellos T es la
-  fecha de siembra directa y las etapas de almácigo no aplican.
-- Algunos cultivos podrían usar solo un almácigo. El modelo debe permitir 0, 1 o 2.
+Cada valor conserva el texto original del libro en `bookValue` (p. ej. `"2-3^P / 3-4"`).
 
-## Datos por cultivo (campos previstos)
+## Etapas calculadas
 
-| Campo | Descripción |
-|-------|-------------|
-| `id` | Identificador (inglés, kebab-case), p. ej. `lettuce` |
-| `name` | Nombre en español, p. ej. "Lechuga" |
-| `sowingMethod` | `flats` (almácigo) o `direct` (siembra directa) |
-| `weeksInFlat1` | Semanas en almácigo 1 |
-| `weeksInFlat2` | Semanas en almácigo 2 (0 si no aplica) |
-| `daysToMaturity` | Días de trasplante a cosecha |
-| `harvestDurationDays` | Duración del periodo de cosecha |
-| `spacingCm` | Distancia entre plantas en la cama (uso futuro) |
-| `source` | Libro + página/tabla, o URL |
+| Etapa | Fecha |
+|-------|-------|
+| Siembra en almácigo 1 | entre T − (H máx + L máx) y T − (H mín + L mín) |
+| Repique a almácigo 2 (solo si hay L) | entre T − L máx y T − L mín |
+| Trasplante a la cama | T |
+| Siembra directa en la cama (cultivos directos) | T |
 
-## Preguntas abiertas
+Como el libro da rangos (p. ej. 3-4 semanas), cada etapa es una **ventana de fechas**: la
+fecha más temprana usa el tiempo máximo y la más tardía el mínimo.
 
-- ¿Tiempo de maduración de la composta que se usará (según el libro / el curso)?
-- ¿Cuántos días antes del trasplante se prepara la cama?
-- ¿"Días a madurez" en el libro se cuentan desde la siembra o desde el trasplante?
-- ¿Qué hortalizas formarán el catálogo inicial?
+Ejemplo — jitomate (H = 4-6, L = 3-4), trasplante el 1 de mayo de 2027:
+- Siembra en almácigo 1: del 20 de febrero al 13 de marzo (10 a 7 semanas antes).
+- Repique a almácigo 2: del 3 al 10 de abril (4 a 3 semanas antes).
+- Trasplante: 1 de mayo.
+
+## Criterios de interpretación
+
+| Caso en la tabla | Interpretación |
+|------------------|----------------|
+| Alternativas con notas (`2-3^P / 3-4`) | Se toma la ventana completa: de 2 a 4 semanas. |
+| `3-4+` | Se toma 3-4; el "+" queda registrado en `bookValue`. |
+| `1-(2)` | Se toma 1-2. |
+| `3-5 días` (maíz) | La unidad es días, no semanas. |
+| `D` (espárrago, ruibarbo) | El libro no da número: no se calcula la siembra y se muestra un aviso. |
+| Dos métodos (zanahoria, alcachofa, ruibarbo) | El usuario elige; el primero es el predeterminado. |
+| Camote | Los 4-6 semanas de H se tratan como producción de brotes (Nota 27). |
+
+## Pendiente
+
+- Significado de las notas **P**, **LG**, **Q** y **D**: si cada una corresponde a una
+  condición concreta, la ventana se podrá ajustar a esa condición en vez de abarcar todas.
+- Cultivos **23 a 29**: no vienen en la tabla proporcionada.
+- **Composta y preparación de la cama**: la tabla no incluye estos tiempos.
+- **Cosecha**: la tabla no incluye días a madurez.
