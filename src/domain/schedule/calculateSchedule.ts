@@ -139,8 +139,3 @@ export function calculateSchedule(
 
   return { cropId: crop.id, method, condition, anchorDate, stages, warnings }
 }
-
-/** Indica si el cultivo tiene valores con código "#" (dependen de la condición de siembra). */
-export function hasTwoDataSets(crop: Crop): boolean {
-  return crop.propagations.some((p) => p.flats.some((flat) => flat.coldWinterRange))
-}

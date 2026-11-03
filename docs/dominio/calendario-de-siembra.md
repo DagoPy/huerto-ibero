@@ -82,7 +82,7 @@ intemperie antes de trasplantar a la cama"; la app lo muestra como etapa en esto
 
 Cultivos con `#`: berza, brócoli, cebolla común y Torpedo, chile, col china, repollo, col
 de Bruselas, col rizada, coliflor, colirrábano, pepino, berenjena y pimiento morrón.
-En la berza la transcripción no muestra el `#`, pero sigue el mismo patrón y se trata igual.
+En la berza solo el almácigo 2 lleva `#`; el almácigo 1 (`2-3 / 3-4`) usa la ventana completa.
 
 ## Criterios de interpretación
 

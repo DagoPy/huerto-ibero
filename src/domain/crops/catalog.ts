@@ -171,8 +171,8 @@ export const crops: Crop[] = [
     name: 'Berza (collard)',
     scientificName: 'Brassica oleracea var. viridis',
     germination: ['early'],
-    // La transcripción no muestra el "#", pero sigue el mismo patrón que las demás brásicas.
-    propagations: [inFlats(twoSets('2-3 / 3-4', [2, 3], [3, 4]), brassicaFlat2())],
+    // El almácigo 1 no lleva "#": se usa la ventana completa. El almácigo 2 sí lo lleva.
+    propagations: [inFlats(weeks('2-3 / 3-4', 2, 4), brassicaFlat2())],
     maturity: weeks('12', 12),
     harvestPeriod: weeks('24', 24),
     seasons: seasons('PR, OT'),

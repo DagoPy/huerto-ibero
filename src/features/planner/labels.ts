@@ -1,24 +1,5 @@
 import type { GrowingCondition, PropagationMethod, Season } from '../../domain/crops/types'
-import type { ScheduleStage, ScheduleWarning } from '../../domain/schedule/calculateSchedule'
-
-export function stageLabel(stage: ScheduleStage): string {
-  switch (stage.id) {
-    case 'flat-sowing':
-      return 'Siembra en almácigo 1'
-    case 'flat-pricking-out':
-      return `Repique a almácigo ${stage.flatNumber}`
-    case 'flat-hardening':
-      return 'Endurecer el almácigo a la intemperie (2 días)'
-    case 'bed-transplant':
-      return 'Trasplante a la cama'
-    case 'bed-direct-sowing':
-      return 'Siembra directa en la cama'
-    case 'harvest-start':
-      return 'Inicio de cosecha'
-    case 'harvest-end':
-      return 'Fin de cosecha'
-  }
-}
+import type { ScheduleWarning } from '../../domain/schedule/calculateSchedule'
 
 export const methodLabels: Record<PropagationMethod, string> = {
   flats: 'En almácigo',
