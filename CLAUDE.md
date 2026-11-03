@@ -101,9 +101,10 @@ npm run build        # verificación de tipos + build de producción
 
 - [x] Estructura inicial del repositorio y contexto.
 - [x] Scaffold de Vite + React + TS.
-- [x] Modelo de dominio y cálculo de etapas de almácigo ([docs](docs/dominio/calendario-de-siembra.md)).
-- [x] Catálogo de vegetales y hortalizas del libro (tabla de datos de cultivo).
+- [x] Modelo de dominio y cálculo de almácigos y cosecha ([docs](docs/dominio/calendario-de-siembra.md)).
+- [x] Catálogo de los 60 vegetales y hortalizas del libro (columnas D, E, H, L, M, R, S, T).
 - [x] UI mínima del planeador.
-- [ ] Composta, preparación de cama y cosecha (faltan datos del libro).
+- [ ] Composta y preparación de cama (faltan datos del libro).
+- [ ] Aclarar el código P en las columnas H y L.
 - [ ] Guardar el plan en localStorage y exportar/importar.
 - [ ] Despliegue en GitHub Pages.

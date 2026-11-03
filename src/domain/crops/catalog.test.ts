@@ -1,28 +1,33 @@
 import { describe, expect, it } from 'vitest'
 import { crops } from './catalog'
+import type { BookDuration } from './types'
+
+function expectValidRange(duration: BookDuration | null) {
+  if (duration?.range) {
+    expect(duration.range.min).toBeGreaterThan(0)
+    expect(duration.range.max).toBeGreaterThanOrEqual(duration.range.min)
+  }
+}
 
 describe('catálogo de cultivos', () => {
-  it('no repite identificadores ni números del libro', () => {
+  it('incluye los 60 cultivos de la tabla, sin repetir', () => {
+    expect(crops.map((crop) => crop.bookNumber)).toEqual(Array.from({ length: 60 }, (_, i) => i + 1))
     expect(new Set(crops.map((crop) => crop.id)).size).toBe(crops.length)
-    expect(new Set(crops.map((crop) => crop.bookNumber)).size).toBe(crops.length)
   })
 
   it.each(crops)('$name tiene datos coherentes', (crop) => {
-    expect(crop.methods.length).toBeGreaterThan(0)
+    expect(crop.propagations.length).toBeGreaterThan(0)
+    expect(new Set(crop.propagations.map((p) => p.method)).size).toBe(crop.propagations.length)
+    expect(crop.seasons.length).toBeGreaterThan(0)
+    expect(crop.seasons).not.toContain(undefined)
     expect(crop.bedSpacingCm.length).toBeGreaterThan(0)
 
-    if (crop.methods.includes('flats')) {
-      expect(crop.flat1).not.toBeNull()
-    } else {
-      expect(crop.flat1).toBeNull()
-      expect(crop.flat2).toBeNull()
+    for (const propagation of crop.propagations) {
+      expect(propagation.flats.length > 0).toBe(propagation.method === 'flats')
+      propagation.flats.forEach(expectValidRange)
+      expectValidRange(propagation.maturity ?? null)
     }
-
-    for (const flat of [crop.flat1, crop.flat2]) {
-      if (flat?.range) {
-        expect(flat.range.min).toBeGreaterThan(0)
-        expect(flat.range.max).toBeGreaterThanOrEqual(flat.range.min)
-      }
-    }
+    expectValidRange(crop.maturity)
+    expectValidRange(crop.harvestPeriod)
   })
 })

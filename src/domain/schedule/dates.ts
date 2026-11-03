@@ -1,10 +1,17 @@
-import { addDays, format, isValid, parse } from 'date-fns'
-import type { DurationRange } from '../crops/types'
+import { addDays, addWeeks, addYears, format, isValid, parse } from 'date-fns'
+import type { DurationUnit } from '../crops/types'
 
 /** Fecha de calendario sin hora ni zona horaria, en formato `YYYY-MM-DD`. */
 export type IsoDate = string
 
+export interface Duration {
+  amount: number
+  unit: DurationUnit
+}
+
 const ISO_DATE_FORMAT = 'yyyy-MM-dd'
+
+const adders = { days: addDays, weeks: addWeeks, years: addYears }
 
 export function parseIsoDate(value: IsoDate): Date {
   // `parse` interpreta la fecha en hora local; `new Date("YYYY-MM-DD")` la tomaría en UTC
@@ -16,11 +23,14 @@ export function parseIsoDate(value: IsoDate): Date {
   return date
 }
 
-export function shiftIsoDate(value: IsoDate, days: number): IsoDate {
-  return format(addDays(parseIsoDate(value), days), ISO_DATE_FORMAT)
-}
-
-export function rangeInDays(range: DurationRange): { min: number; max: number } {
-  const factor = range.unit === 'weeks' ? 7 : 1
-  return { min: range.min * factor, max: range.max * factor }
+/**
+ * Suma (`direction = 1`) o resta (`direction = -1`) una serie de duraciones a una fecha.
+ * Los años se suman como años de calendario, no como 365 días.
+ */
+export function shiftIsoDate(value: IsoDate, durations: Duration[], direction: 1 | -1): IsoDate {
+  const date = durations.reduce(
+    (current, { amount, unit }) => adders[unit](current, amount * direction),
+    parseIsoDate(value),
+  )
+  return format(date, ISO_DATE_FORMAT)
 }

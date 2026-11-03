@@ -4,7 +4,7 @@ import type { PropagationMethod } from '../../domain/crops/types'
 import { calculateSchedule } from '../../domain/schedule/calculateSchedule'
 import type { IsoDate } from '../../domain/schedule/dates'
 import { formatDate } from '../../shared/formatDate'
-import { methodLabels, stageLabels, warningMessage } from './labels'
+import { methodLabels, seasonLabels, stageLabel, warningMessage } from './labels'
 import './PlannerPage.css'
 
 interface Planting {
@@ -25,7 +25,7 @@ export function PlannerPage() {
     if (!crop || !anchorDate) return
     setPlantings((current) => [
       ...current,
-      { key: crypto.randomUUID(), cropId, anchorDate, method: crop.methods[0] },
+      { key: crypto.randomUUID(), cropId, anchorDate, method: crop.propagations[0].method },
     ])
   }
 
@@ -79,6 +79,7 @@ export function PlannerPage() {
           const schedule = calculateSchedule(crop, planting.anchorDate, {
             method: planting.method,
           })
+          const propagation = crop.propagations.find((p) => p.method === planting.method)
           const anchorLabel =
             planting.method === 'direct' ? 'Fecha de siembra directa' : 'Fecha de trasplante'
 
@@ -109,7 +110,7 @@ export function PlannerPage() {
                     }
                   />
                 </label>
-                {crop.methods.length > 1 && (
+                {crop.propagations.length > 1 && (
                   <label>
                     Método
                     <select
@@ -120,7 +121,7 @@ export function PlannerPage() {
                         })
                       }
                     >
-                      {crop.methods.map((method) => (
+                      {crop.propagations.map(({ method }) => (
                         <option key={method} value={method}>
                           {methodLabels[method]}
                         </option>
@@ -132,8 +133,8 @@ export function PlannerPage() {
 
               <ol className="stages">
                 {schedule.stages.map((stage) => (
-                  <li key={stage.id}>
-                    <span className="stage-name">{stageLabels[stage.id]}</span>
+                  <li key={`${stage.id}-${stage.flatNumber ?? ''}`}>
+                    <span className="stage-name">{stageLabel(stage)}</span>
                     <span className="stage-date">
                       {stage.window.earliest === stage.window.latest
                         ? formatDate(stage.window.earliest)
@@ -144,11 +145,16 @@ export function PlannerPage() {
               </ol>
 
               {schedule.warnings.map((warning) => (
-                <p key={warning.flat} className="warning">
+                <p key={`${warning.field}-${warning.flatNumber ?? ''}`} className="warning">
                   {warningMessage(warning)}
                 </p>
               ))}
+              {propagation?.notes && <p className="notes">{propagation.notes}</p>}
               {crop.notes && <p className="notes">{crop.notes}</p>}
+              <p className="notes">
+                Temporada de siembra según el libro:{' '}
+                {crop.seasons.map((season) => seasonLabels[season]).join(', ')}.
+              </p>
             </li>
           )
         })}

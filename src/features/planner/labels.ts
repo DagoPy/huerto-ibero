@@ -1,11 +1,21 @@
-import type { PropagationMethod } from '../../domain/crops/types'
-import type { ScheduleWarning, StageId } from '../../domain/schedule/calculateSchedule'
+import type { PropagationMethod, Season } from '../../domain/crops/types'
+import type { ScheduleStage, ScheduleWarning } from '../../domain/schedule/calculateSchedule'
 
-export const stageLabels: Record<StageId, string> = {
-  'flat1-sowing': 'Siembra en almácigo 1',
-  'flat2-pricking-out': 'Repique a almácigo 2',
-  'bed-transplant': 'Trasplante a la cama',
-  'bed-direct-sowing': 'Siembra directa en la cama',
+export function stageLabel(stage: ScheduleStage): string {
+  switch (stage.id) {
+    case 'flat-sowing':
+      return 'Siembra en almácigo 1'
+    case 'flat-pricking-out':
+      return `Repique a almácigo ${stage.flatNumber}`
+    case 'bed-transplant':
+      return 'Trasplante a la cama'
+    case 'bed-direct-sowing':
+      return 'Siembra directa en la cama'
+    case 'harvest-start':
+      return 'Inicio de cosecha'
+    case 'harvest-end':
+      return 'Fin de cosecha'
+  }
 }
 
 export const methodLabels: Record<PropagationMethod, string> = {
@@ -13,8 +23,18 @@ export const methodLabels: Record<PropagationMethod, string> = {
   direct: 'Directo en la cama',
 }
 
-const flatNames = { flat1: 'el almácigo 1', flat2: 'el almácigo 2' }
+export const seasonLabels: Record<Season, string> = {
+  spring: 'primavera',
+  summer: 'verano',
+  autumn: 'otoño',
+  winter: 'invierno',
+}
 
 export function warningMessage(warning: ScheduleWarning): string {
-  return `El libro no indica las semanas en ${flatNames[warning.flat]} (valor: "${warning.bookValue}"). Consulta la nota correspondiente.`
+  const what = {
+    flat: `las semanas en el almácigo ${warning.flatNumber}`,
+    maturity: 'el tiempo hasta la madurez',
+    'harvest-period': 'la duración del período de cosecha',
+  }[warning.field]
+  return `El libro no indica ${what} (valor: "${warning.bookValue}"), así que no se calcula esa fecha.`
 }

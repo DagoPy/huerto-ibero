@@ -1,11 +1,13 @@
-import type { Crop, PropagationMethod } from '../crops/types'
-import { parseIsoDate, rangeInDays, shiftIsoDate, type IsoDate } from './dates'
+import type { BookDuration, Crop, DurationRange, PropagationMethod } from '../crops/types'
+import { parseIsoDate, shiftIsoDate, type Duration, type IsoDate } from './dates'
 
 export type StageId =
-  | 'flat1-sowing' // Siembra en almácigo 1
-  | 'flat2-pricking-out' // Repique del almácigo 1 al almácigo 2
+  | 'flat-sowing' // Siembra en el almácigo 1
+  | 'flat-pricking-out' // Repique al siguiente almácigo (2, 3...)
   | 'bed-transplant' // Trasplante a la cama de siembra (fecha ancla)
   | 'bed-direct-sowing' // Siembra directa en la cama (fecha ancla)
+  | 'harvest-start' // Inicio de cosecha
+  | 'harvest-end' // Fin del período de cosecha
 
 /** Ventana de fechas en la que conviene realizar una etapa. */
 export interface DateWindow {
@@ -15,12 +17,16 @@ export interface DateWindow {
 
 export interface ScheduleStage {
   id: StageId
+  /** Para `flat-pricking-out`: número del almácigo al que se repica. */
+  flatNumber?: number
   window: DateWindow
 }
 
-export type ScheduleWarning = {
-  code: 'flat-duration-not-given'
-  flat: 'flat1' | 'flat2'
+export interface ScheduleWarning {
+  code: 'duration-not-given'
+  field: 'flat' | 'maturity' | 'harvest-period'
+  /** Para `field = 'flat'`: número del almácigo. */
+  flatNumber?: number
   bookValue: string
 }
 
@@ -38,13 +44,18 @@ export interface ScheduleOptions {
   method?: PropagationMethod
 }
 
+const shortest = (range: DurationRange): Duration => ({ amount: range.min, unit: range.unit })
+const longest = (range: DurationRange): Duration => ({ amount: range.max, unit: range.unit })
+
 /**
  * Calcula el calendario de un cultivo a partir de la fecha ancla: la fecha de trasplante a
  * la cama (o la de siembra directa, si el cultivo va directo a la cama).
  *
- * Las etapas previas se calculan restando a la fecha ancla los tiempos en almácigo del
- * libro. Como el libro da rangos (p. ej. 3-4 semanas), cada etapa es una ventana:
- * `earliest` usa el tiempo máximo y `latest` el mínimo.
+ * - Las etapas de almácigo se calculan restando a la fecha ancla los tiempos en almácigo.
+ * - La cosecha se calcula sumando a la fecha ancla las semanas a madurez y de cosecha.
+ *
+ * Como el libro da rangos (p. ej. 3-4 semanas), cada etapa es una ventana. Antes de la fecha
+ * ancla, `earliest` usa los tiempos máximos; después, `earliest` usa los mínimos.
  */
 export function calculateSchedule(
   crop: Crop,
@@ -53,63 +64,57 @@ export function calculateSchedule(
 ): CropSchedule {
   parseIsoDate(anchorDate)
 
-  const method = options.method ?? crop.methods[0]
-  if (!crop.methods.includes(method)) {
+  const method = options.method ?? crop.propagations[0].method
+  const propagation = crop.propagations.find((p) => p.method === method)
+  if (!propagation) {
     throw new Error(`El cultivo "${crop.id}" no admite el método "${method}".`)
   }
 
-  const schedule: CropSchedule = {
-    cropId: crop.id,
-    method,
-    anchorDate,
-    stages: [],
-    warnings: [],
-  }
-  const anchorWindow: DateWindow = { earliest: anchorDate, latest: anchorDate }
-
-  if (method === 'direct') {
-    schedule.stages.push({ id: 'bed-direct-sowing', window: anchorWindow })
-    return schedule
-  }
-
-  const flats = [
-    { key: 'flat1' as const, duration: crop.flat1 },
-    { key: 'flat2' as const, duration: crop.flat2 },
-  ].filter((flat) => flat.duration !== null)
-
-  for (const { key, duration } of flats) {
-    if (duration?.range === null) {
-      schedule.warnings.push({ code: 'flat-duration-not-given', flat: key, bookValue: duration.bookValue })
+  const warnings: ScheduleWarning[] = []
+  const known = (duration: BookDuration, warning: Omit<ScheduleWarning, 'code' | 'bookValue'>) => {
+    if (duration.range === null) {
+      warnings.push({ code: 'duration-not-given', bookValue: duration.bookValue, ...warning })
     }
+    return duration.range
   }
 
-  if (schedule.warnings.length === 0) {
-    const flat1 = crop.flat1?.range ? rangeInDays(crop.flat1.range) : { min: 0, max: 0 }
-    const flat2 = crop.flat2?.range ? rangeInDays(crop.flat2.range) : null
+  const stages: ScheduleStage[] = []
+  const at = (direction: 1 | -1, earliest: Duration[], latest: Duration[]): DateWindow => ({
+    earliest: shiftIsoDate(anchorDate, earliest, direction),
+    latest: shiftIsoDate(anchorDate, latest, direction),
+  })
 
-    const daysBeforeAnchor = {
-      min: flat1.min + (flat2?.min ?? 0),
-      max: flat1.max + (flat2?.max ?? 0),
-    }
-    schedule.stages.push({
-      id: 'flat1-sowing',
-      window: {
-        earliest: shiftIsoDate(anchorDate, -daysBeforeAnchor.max),
-        latest: shiftIsoDate(anchorDate, -daysBeforeAnchor.min),
-      },
+  // Almácigos: la etapa del almácigo i empieza cuando faltan los almácigos i..n.
+  const flatRanges = propagation.flats.map((flat, index) => known(flat, { field: 'flat', flatNumber: index + 1 }))
+  if (flatRanges.every((range) => range !== null)) {
+    flatRanges.forEach((_, index) => {
+      const remaining = flatRanges.slice(index)
+      stages.push({
+        id: index === 0 ? 'flat-sowing' : 'flat-pricking-out',
+        ...(index > 0 && { flatNumber: index + 1 }),
+        window: at(-1, remaining.map(longest), remaining.map(shortest)),
+      })
     })
+  }
 
-    if (flat2) {
-      schedule.stages.push({
-        id: 'flat2-pricking-out',
-        window: {
-          earliest: shiftIsoDate(anchorDate, -flat2.max),
-          latest: shiftIsoDate(anchorDate, -flat2.min),
-        },
+  stages.push({
+    id: method === 'direct' ? 'bed-direct-sowing' : 'bed-transplant',
+    window: { earliest: anchorDate, latest: anchorDate },
+  })
+
+  // Cosecha.
+  const maturity = known(propagation.maturity ?? crop.maturity, { field: 'maturity' })
+  if (maturity) {
+    stages.push({ id: 'harvest-start', window: at(1, [shortest(maturity)], [longest(maturity)]) })
+
+    const period = crop.harvestPeriod && known(crop.harvestPeriod, { field: 'harvest-period' })
+    if (period) {
+      stages.push({
+        id: 'harvest-end',
+        window: at(1, [shortest(maturity), shortest(period)], [longest(maturity), longest(period)]),
       })
     }
   }
 
-  schedule.stages.push({ id: 'bed-transplant', window: anchorWindow })
-  return schedule
+  return { cropId: crop.id, method, anchorDate, stages, warnings }
 }
