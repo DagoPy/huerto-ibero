@@ -53,6 +53,40 @@ describe('calculateSchedule', () => {
     expect(window(schedule, 'flat-pricking-out', 3)).toEqual({ earliest: '2027-04-20', latest: '2027-05-04' })
   })
 
+  it('usa el juego de datos de la condición elegida en los valores con código #', () => {
+    // Brócoli: H = 2-3# / 3-4, L = 3-4# / 5-6.
+    const mild = calculateSchedule(crop('broccoli'), '2027-04-01')
+    expect(mild.condition).toBe('mild-winter')
+    expect(window(mild, 'flat-sowing')).toEqual({ earliest: '2027-02-11', latest: '2027-02-25' })
+    expect(window(mild, 'flat-pricking-out', 2)).toEqual({ earliest: '2027-03-04', latest: '2027-03-11' })
+
+    const cold = calculateSchedule(crop('broccoli'), '2027-04-01', { condition: 'cold-winter' })
+    expect(window(cold, 'flat-sowing')).toEqual({ earliest: '2027-01-21', latest: '2027-02-04' })
+    expect(window(cold, 'flat-pricking-out', 2)).toEqual({ earliest: '2027-02-18', latest: '2027-02-25' })
+  })
+
+  it('agrega el endurecimiento de 2 días antes del trasplante en cultivos con código #', () => {
+    const broccoli = calculateSchedule(crop('broccoli'), '2027-04-01')
+    expect(broccoli.stages.map((stage) => stage.id)).toEqual([
+      'flat-sowing',
+      'flat-pricking-out',
+      'flat-hardening',
+      'bed-transplant',
+      'harvest-start',
+      'harvest-end',
+    ])
+    expect(window(broccoli, 'flat-hardening')).toEqual({ earliest: '2027-03-30', latest: '2027-03-30' })
+
+    const tomato = calculateSchedule(crop('tomato'), '2027-04-01')
+    expect(tomato.stages.map((stage) => stage.id)).not.toContain('flat-hardening')
+  })
+
+  it('la condición no afecta a los cultivos sin código #', () => {
+    const mild = calculateSchedule(crop('tomato'), '2027-05-01')
+    const cold = calculateSchedule(crop('tomato'), '2027-05-01', { condition: 'cold-winter' })
+    expect(cold.stages).toEqual(mild.stages)
+  })
+
   it('usa un valor exacto cuando el libro no da rango', () => {
     // Puerro: 6 semanas + 6 semanas.
     const schedule = calculateSchedule(crop('leek'), '2027-06-15')

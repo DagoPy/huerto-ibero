@@ -20,16 +20,28 @@ export interface DurationRange {
 }
 
 /**
+ * Condición de siembra para los valores con código "#", que tienen dos juegos de datos:
+ * - `mild-winter`: siembra en verano con sombreado (para trasplantar en otoño), o en
+ *   invierno con invernadero en áreas de invierno poco frío (para trasplantar en primavera).
+ * - `cold-winter`: siembra en invierno dentro de un buen invernadero o mini-invernadero en
+ *   áreas de invierno muy frío (para trasplantar en primavera).
+ */
+export type GrowingCondition = 'mild-winter' | 'cold-winter'
+
+/**
  * Un tiempo tomado de la tabla del libro.
  *
- * `bookValue` conserva el texto original (con sus códigos, p. ej. "2-3^P / 3-4") para poder
+ * `bookValue` conserva el texto original (con sus códigos, p. ej. "2-3# / 3-4") para poder
  * rastrear y corregir el dato. `range` es la ventana que usa el cálculo: cuando el libro da
- * varias alternativas, abarca desde el mínimo hasta el máximo de todas. `range` es `null`
- * cuando el libro no da un número (código "D": desconocido).
+ * varias alternativas sin código "#", abarca desde el mínimo hasta el máximo de todas.
+ * `range` es `null` cuando el libro no da un número (código "D": desconocido).
  */
 export interface BookDuration {
   bookValue: string
+  /** Con código "#": el primer juego de datos (`mild-winter`). */
   range: DurationRange | null
+  /** Con código "#": el segundo juego de datos (`cold-winter`). */
+  coldWinterRange?: DurationRange
 }
 
 export interface Propagation {

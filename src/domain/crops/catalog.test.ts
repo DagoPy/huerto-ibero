@@ -3,9 +3,11 @@ import { crops } from './catalog'
 import type { BookDuration } from './types'
 
 function expectValidRange(duration: BookDuration | null) {
-  if (duration?.range) {
-    expect(duration.range.min).toBeGreaterThan(0)
-    expect(duration.range.max).toBeGreaterThanOrEqual(duration.range.min)
+  for (const range of [duration?.range, duration?.coldWinterRange]) {
+    if (range) {
+      expect(range.min).toBeGreaterThan(0)
+      expect(range.max).toBeGreaterThanOrEqual(range.min)
+    }
   }
 }
 

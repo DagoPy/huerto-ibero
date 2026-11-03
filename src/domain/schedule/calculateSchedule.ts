@@ -1,9 +1,16 @@
-import type { BookDuration, Crop, DurationRange, PropagationMethod } from '../crops/types'
+import type {
+  BookDuration,
+  Crop,
+  DurationRange,
+  GrowingCondition,
+  PropagationMethod,
+} from '../crops/types'
 import { parseIsoDate, shiftIsoDate, type Duration, type IsoDate } from './dates'
 
 export type StageId =
   | 'flat-sowing' // Siembra en el almácigo 1
   | 'flat-pricking-out' // Repique al siguiente almácigo (2, 3...)
+  | 'flat-hardening' // Endurecer el almácigo a la intemperie antes del trasplante (código #)
   | 'bed-transplant' // Trasplante a la cama de siembra (fecha ancla)
   | 'bed-direct-sowing' // Siembra directa en la cama (fecha ancla)
   | 'harvest-start' // Inicio de cosecha
@@ -33,6 +40,7 @@ export interface ScheduleWarning {
 export interface CropSchedule {
   cropId: string
   method: PropagationMethod
+  condition: GrowingCondition
   anchorDate: IsoDate
   /** Ordenadas cronológicamente. */
   stages: ScheduleStage[]
@@ -42,7 +50,12 @@ export interface CropSchedule {
 export interface ScheduleOptions {
   /** Por defecto, el primer método del cultivo. */
   method?: PropagationMethod
+  /** Juego de datos para los valores con código "#". Por defecto, `mild-winter`. */
+  condition?: GrowingCondition
 }
+
+/** Código "#": dar un trato duro al almácigo, a la intemperie, antes de trasplantar. */
+const HARDENING_DAYS = 2
 
 const shortest = (range: DurationRange): Duration => ({ amount: range.min, unit: range.unit })
 const longest = (range: DurationRange): Duration => ({ amount: range.max, unit: range.unit })
@@ -70,12 +83,15 @@ export function calculateSchedule(
     throw new Error(`El cultivo "${crop.id}" no admite el método "${method}".`)
   }
 
+  const condition = options.condition ?? 'mild-winter'
   const warnings: ScheduleWarning[] = []
   const known = (duration: BookDuration, warning: Omit<ScheduleWarning, 'code' | 'bookValue'>) => {
     if (duration.range === null) {
       warnings.push({ code: 'duration-not-given', bookValue: duration.bookValue, ...warning })
     }
-    return duration.range
+    return condition === 'cold-winter' && duration.coldWinterRange
+      ? duration.coldWinterRange
+      : duration.range
   }
 
   const stages: ScheduleStage[] = []
@@ -95,6 +111,11 @@ export function calculateSchedule(
         window: at(-1, remaining.map(longest), remaining.map(shortest)),
       })
     })
+
+    if (propagation.flats.some((flat) => flat.coldWinterRange)) {
+      const hardening = shiftIsoDate(anchorDate, [{ amount: HARDENING_DAYS, unit: 'days' }], -1)
+      stages.push({ id: 'flat-hardening', window: { earliest: hardening, latest: hardening } })
+    }
   }
 
   stages.push({
@@ -116,5 +137,10 @@ export function calculateSchedule(
     }
   }
 
-  return { cropId: crop.id, method, anchorDate, stages, warnings }
+  return { cropId: crop.id, method, condition, anchorDate, stages, warnings }
+}
+
+/** Indica si el cultivo tiene valores con código "#" (dependen de la condición de siembra). */
+export function hasTwoDataSets(crop: Crop): boolean {
+  return crop.propagations.some((p) => p.flats.some((flat) => flat.coldWinterRange))
 }

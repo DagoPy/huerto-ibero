@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { crops, findCrop } from '../../domain/crops/catalog'
-import type { PropagationMethod } from '../../domain/crops/types'
-import { calculateSchedule } from '../../domain/schedule/calculateSchedule'
+import type { GrowingCondition, PropagationMethod } from '../../domain/crops/types'
+import { calculateSchedule, hasTwoDataSets } from '../../domain/schedule/calculateSchedule'
 import type { IsoDate } from '../../domain/schedule/dates'
 import { formatDate } from '../../shared/formatDate'
-import { methodLabels, seasonLabels, stageLabel, warningMessage } from './labels'
+import { conditionLabels, methodLabels, seasonLabels, stageLabel, warningMessage } from './labels'
 import './PlannerPage.css'
 
 interface Planting {
@@ -18,6 +18,7 @@ export function PlannerPage() {
   const [plantings, setPlantings] = useState<Planting[]>([])
   const [cropId, setCropId] = useState(crops[0].id)
   const [anchorDate, setAnchorDate] = useState<IsoDate>('')
+  const [condition, setCondition] = useState<GrowingCondition>('mild-winter')
 
   function addPlanting(event: FormEvent) {
     event.preventDefault()
@@ -47,6 +48,24 @@ export function PlannerPage() {
         </p>
       </header>
 
+      <label className="planner-condition">
+        Condición de siembra
+        <select
+          value={condition}
+          onChange={(e) => setCondition(e.target.value as GrowingCondition)}
+        >
+          {Object.entries(conditionLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <small>
+          Solo cambia los tiempos en almácigo de los cultivos marcados con "#" en el libro
+          (coles, cebollas, pepino, berenjena, chiles y pimientos).
+        </small>
+      </label>
+
       <form className="planner-form" onSubmit={addPlanting}>
         <label>
           Hortaliza
@@ -71,6 +90,12 @@ export function PlannerPage() {
       </form>
 
       {plantings.length === 0 && <p className="empty">Aún no has agregado hortalizas.</p>}
+      {plantings.length > 0 && (
+        <p className="notes">
+          La cosecha se estima contando las semanas a madurez del libro desde el trasplante a la
+          cama.
+        </p>
+      )}
 
       <ul className="plantings">
         {plantings.map((planting) => {
@@ -78,6 +103,7 @@ export function PlannerPage() {
           if (!crop) return null
           const schedule = calculateSchedule(crop, planting.anchorDate, {
             method: planting.method,
+            condition,
           })
           const propagation = crop.propagations.find((p) => p.method === planting.method)
           const anchorLabel =
@@ -149,6 +175,11 @@ export function PlannerPage() {
                   {warningMessage(warning)}
                 </p>
               ))}
+              {hasTwoDataSets(crop) && planting.method === 'flats' && (
+                <p className="notes">
+                  Los tiempos en almácigo dependen de la condición de siembra elegida arriba.
+                </p>
+              )}
               {propagation?.notes && <p className="notes">{propagation.notes}</p>}
               {crop.notes && <p className="notes">{crop.notes}</p>}
               <p className="notes">

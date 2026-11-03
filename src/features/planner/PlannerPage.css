@@ -16,6 +16,15 @@
   font-weight: 600;
 }
 
+.planner-condition {
+  margin-top: 1.5rem;
+}
+
+.planner-condition small {
+  font-weight: 400;
+  color: var(--muted);
+}
+
 .planner-form {
   display: flex;
   flex-wrap: wrap;

@@ -105,6 +105,6 @@ npm run build        # verificación de tipos + build de producción
 - [x] Catálogo de los 60 vegetales y hortalizas del libro (columnas D, E, H, L, M, R, S, T).
 - [x] UI mínima del planeador.
 - [ ] Composta y preparación de cama (faltan datos del libro).
-- [ ] Aclarar el código P en las columnas H y L.
+- [x] Condición de siembra para los valores con código `#`.
 - [ ] Guardar el plan en localStorage y exportar/importar.
 - [ ] Despliegue en GitHub Pages.

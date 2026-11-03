@@ -6,7 +6,7 @@ import type { BookDuration, Crop, Propagation, Season } from './types'
  *   E (método), H y L (semanas en almácigo) y M (distancia en la cama).
  * - Tablas de referencia y planeación del huerto: columnas R (semanas a madurez),
  *   S (semanas de cosecha) y T (temporada de siembra).
- * Los códigos de letras (P, LG, Q, D, **, +...) se conservan en `bookValue`.
+ * Los códigos de letras (#, LG, Q, D, **, +...) se conservan en `bookValue`.
  */
 
 const weeks = (bookValue: string, min: number, max: number = min): BookDuration => ({
@@ -22,6 +22,17 @@ const days = (bookValue: string, min: number, max: number = min): BookDuration =
 const years = (bookValue: string, min: number, max: number = min): BookDuration => ({
   bookValue,
   range: { min, max, unit: 'years' },
+})
+
+/** Código "#": dos juegos de datos, para invierno poco frío y para invierno muy frío. */
+const twoSets = (
+  bookValue: string,
+  [mildMin, mildMax]: [number, number],
+  [coldMin, coldMax]: [number, number],
+): BookDuration => ({
+  bookValue,
+  range: { min: mildMin, max: mildMax, unit: 'weeks' },
+  coldWinterRange: { min: coldMin, max: coldMax, unit: 'weeks' },
 })
 
 /** Código "D": desconocido, el libro no da un número. */
@@ -42,9 +53,9 @@ const seasonCodes: Record<string, Season> = { PR: 'spring', VE: 'summer', OT: 'a
 const seasons = (codes: string): Season[] => codes.split(',').map((code) => seasonCodes[code.trim()])
 
 // Valores que se repiten en las brásicas y solanáceas.
-const brassicaFlat1 = () => weeks('2-3^P / 3-4', 2, 4)
-const brassicaFlat2 = () => weeks('3-4^P / 5-6^LG', 3, 6)
-const nightshadeFlat2 = () => weeks('3-4^P / 5-7^LG', 3, 7)
+const brassicaFlat1 = () => twoSets('2-3# / 3-4', [2, 3], [3, 4])
+const brassicaFlat2 = () => twoSets('3-4# / 5-6^LG', [3, 4], [5, 6])
+const nightshadeFlat2 = () => twoSets('3-4# / 5-7^LG', [3, 4], [5, 7])
 const squashFlat1 = () => weeks('3-4^LG', 3, 4)
 
 export const crops: Crop[] = [
@@ -160,7 +171,8 @@ export const crops: Crop[] = [
     name: 'Berza (collard)',
     scientificName: 'Brassica oleracea var. viridis',
     germination: ['early'],
-    propagations: [inFlats(weeks('2-3 / 3-4', 2, 4), brassicaFlat2())],
+    // La transcripción no muestra el "#", pero sigue el mismo patrón que las demás brásicas.
+    propagations: [inFlats(twoSets('2-3 / 3-4', [2, 3], [3, 4]), brassicaFlat2())],
     maturity: weeks('12', 12),
     harvestPeriod: weeks('24', 24),
     seasons: seasons('PR, OT'),
@@ -296,7 +308,7 @@ export const crops: Crop[] = [
     name: 'Cebolla común',
     scientificName: 'Allium cepa',
     germination: ['early'],
-    propagations: [inFlats(weeks('6-8^P / 8-10', 6, 10))],
+    propagations: [inFlats(twoSets('6-8# / 8-10', [6, 8], [8, 10]))],
     maturity: weeks('14-17', 14, 17),
     harvestPeriod: null,
     seasons: seasons('PR, OT'),
@@ -308,7 +320,7 @@ export const crops: Crop[] = [
     name: 'Cebolla Torpedo',
     scientificName: 'Allium cepa',
     germination: ['early'],
-    propagations: [inFlats(weeks('6-8^P / 8-10', 6, 10))],
+    propagations: [inFlats(twoSets('6-8# / 8-10', [6, 8], [8, 10]))],
     maturity: weeks('14-17', 14, 17),
     harvestPeriod: null,
     seasons: seasons('PR, OT'),
@@ -418,7 +430,7 @@ export const crops: Crop[] = [
     name: 'Col rizada (kale)',
     scientificName: 'Brassica oleracea var. sabellica',
     germination: ['early'],
-    propagations: [inFlats(weeks('1-2^P / 3-4', 1, 4), brassicaFlat2())],
+    propagations: [inFlats(twoSets('1-2# / 3-4', [1, 2], [3, 4]), brassicaFlat2())],
     maturity: weeks('8-9', 8, 9),
     harvestPeriod: weeks('17', 17),
     seasons: seasons('PR, OT'),
@@ -650,7 +662,7 @@ export const crops: Crop[] = [
     name: 'Pepino',
     scientificName: 'Cucumis sativus',
     germination: ['early'],
-    propagations: [inFlats(weeks('2-3^P / 3-4', 2, 4))],
+    propagations: [inFlats(twoSets('2-3# / 3-4', [2, 3], [3, 4]))],
     maturity: weeks('7-10', 7, 10),
     harvestPeriod: weeks('7-14', 7, 14),
     seasons: seasons('VE'),

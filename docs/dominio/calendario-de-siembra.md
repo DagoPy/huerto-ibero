@@ -29,7 +29,7 @@ cama, T es la fecha de siembra directa. Todas las demás fechas se calculan desd
 | S | Semanas en período de cosecha | `harvestPeriod` |
 | T | Temporada de siembra (PR / VE / OT / IN) | `seasons` |
 
-Cada valor conserva el texto original del libro en `bookValue` (p. ej. `"2-3^P / 3-4"`).
+Cada valor conserva el texto original del libro en `bookValue` (p. ej. `"2-3# / 3-4"`).
 
 ## Etapas calculadas
 
@@ -39,6 +39,7 @@ Sea `A1, A2, ... An` el tiempo en cada almácigo, `R` la madurez y `S` la cosech
 |-------|-------|
 | Siembra en almácigo 1 | T − (A1 + A2 + ... + An) |
 | Repique a almácigo k | T − (Ak + ... + An) |
+| Endurecer el almácigo a la intemperie (solo cultivos con `#`) | T − 2 días |
 | Trasplante a la cama / siembra directa | T |
 | Inicio de cosecha | T + R |
 | Fin de cosecha (si S no es "-") | T + R + S |
@@ -62,16 +63,33 @@ Ejemplo: jitomate (H = 4-6, L = 3-4, R = 8-13, S = 17+), trasplante el 1 de mayo
 |--------|-------------|----------------|
 | D | Desconocido | No se calcula esa fecha y se muestra un aviso. |
 | Q | El apio pasa a un **tercer almácigo** 4-6 semanas más (3-4 meses en total) | El apio tiene 3 almácigos. |
+| # | Dos juegos de datos (ver abajo) | El usuario elige la condición de siembra. |
 | LG | Trasplantar cuando la plántula mida ~15 cm | Solo informativo; no cambia el tiempo. |
-| P | Perenne | Ver "Pendiente". |
 | ** | Depende de la variedad | Se usa el rango completo. |
 | + | El rendimiento puede ser mayor | No afecta el tiempo; se usa el número. |
+
+## Condición de siembra (código #)
+
+Los valores con `#` (p. ej. `2-3# / 3-4`) tienen dos juegos de datos:
+
+| Condición | Juego | Descripción del libro |
+|-----------|-------|-----------------------|
+| `mild-winter` (predeterminada) | Primero (`2-3`) | Siembra en verano, con sombreado, para trasplantar en otoño; o siembra en invierno en áreas con invierno menos frío, con invernadero, para trasplantar en primavera. |
+| `cold-winter` | Segundo (`3-4`) | Siembra en invierno, dentro de un buen invernadero o mini-invernadero, en áreas con inviernos muy fríos, para trasplantar en primavera. |
+
+El libro indica además "dar un trato duro durante dos días poniendo el almácigo a la
+intemperie antes de trasplantar a la cama"; la app lo muestra como etapa en estos cultivos.
+
+Cultivos con `#`: berza, brócoli, cebolla común y Torpedo, chile, col china, repollo, col
+de Bruselas, col rizada, coliflor, colirrábano, pepino, berenjena y pimiento morrón.
+En la berza la transcripción no muestra el `#`, pero sigue el mismo patrón y se trata igual.
 
 ## Criterios de interpretación
 
 | Caso en la tabla | Interpretación |
 |------------------|----------------|
-| Alternativas (`2-3^P / 3-4`) | Ventana completa: de 2 a 4 semanas. |
+| Dos juegos de datos (`2-3# / 3-4`) | Según la condición de siembra elegida. |
+| Alternativas sin `#` | Ventana completa entre el mínimo y el máximo. |
 | `4+`, `3-4+`, `17+` | Se usa el número; el "+" queda en `bookValue`. |
 | `1-(2)` | 1-2. |
 | `3-5 días` (maíz) | La unidad es días. |
@@ -84,13 +102,9 @@ Ejemplo: jitomate (H = 4-6, L = 3-4, R = 8-13, S = 17+), trasplante el 1 de mayo
 
 **Supuesto:** las semanas a madurez (R) se cuentan **desde el trasplante a la cama**. Los
 valores coinciden con los tiempos habituales desde el trasplante (p. ej. jitomate 8-13
-semanas), pero el libro no lo dice explícitamente en las tablas proporcionadas.
+semanas), pero el libro no lo aclara. La interfaz avisa de este supuesto.
 
 ## Pendiente
 
-- **Código P:** el código de letras dice "Perene", pero aparece en cultivos que no son
-  perennes, como pepino (`2-3^P / 3-4`) y cebolla (`6-8^P / 8-10`). Hay que revisar en el
-  libro si es otro símbolo, por ejemplo `#`, que distingue la siembra en verano o en
-  invierno con poco frío de la siembra en invernadero en climas muy fríos.
 - **Composta y preparación de la cama:** las tablas no incluyen estos tiempos.
 - **Temporada de siembra:** se muestra como dato; no se valida contra la fecha elegida.
