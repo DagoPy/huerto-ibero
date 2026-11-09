@@ -1,0 +1,353 @@
+/* Línea de tiempo del planeador. Mobile-first; escritorio desde 48rem.
+   Cuatro tonos derivados de la paleta (sin amarillo):
+   almácigo 1 terracota · almácigo 2 verde helecho · en la cama verde té · cosecha verde oscuro.
+   Además del color, cada barra lleva su nombre escrito. */
+
+.timeline {
+  --timeline-flat: color-mix(in srgb, var(--color-danger) 45%, var(--eggshell));
+  --timeline-pricking: var(--color-secondary);
+  --timeline-bed: var(--color-surface-soft);
+  --timeline-harvest: var(--color-primary-strong);
+  /* Meses alternos: el mismo crema del fondo, un tono más oscuro (sin verde, para no
+     competir con las barras) */
+  --timeline-band: color-mix(in srgb, var(--color-ink) 5%, var(--color-bg));
+  --timeline-track-height: 2.5rem;
+  /* Rojo de "Hoy": el mismo tono de --color-danger, más vivo (más croma, misma luminosidad
+     para que el texto claro conserve el contraste) */
+  --timeline-today: var(--color-danger);
+  /* Alto de la fila de nombres de mes, que la línea de "Hoy" no cruza */
+  --timeline-month-row: 1.6rem;
+  font-size: var(--text-sm);
+}
+
+@supports (color: oklch(from red l c h)) {
+  .timeline {
+    --timeline-today: oklch(from var(--color-danger) l calc(c + 0.06) h);
+  }
+}
+
+/* Leyenda y nota */
+
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.timeline-chip {
+  display: inline-block;
+  flex: none;
+  width: 1.25rem;
+  height: 0.85rem;
+  border-radius: 0.2rem;
+  vertical-align: middle;
+}
+
+.timeline-chip--flat {
+  background: var(--timeline-flat);
+}
+
+.timeline-chip--pricking {
+  background: var(--timeline-pricking);
+}
+
+.timeline-chip--bed {
+  background: var(--timeline-bed);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.timeline-chip--harvest {
+  background: var(--timeline-harvest);
+}
+
+.timeline-diamond {
+  display: inline-block;
+  flex: none;
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-inline: 0.2rem;
+  background: var(--color-ink);
+  rotate: 45deg;
+}
+
+.timeline-note {
+  max-width: 48rem;
+  margin: var(--space-2) 0 var(--space-4);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+/* Eje de meses: columnas con franjas alternas, nombres centrados */
+
+.timeline-axis {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--color-bg);
+}
+
+.timeline-axis-spacer {
+  display: none;
+}
+
+.timeline-axis-track {
+  position: relative;
+  height: 3rem;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.timeline-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--timeline-band);
+}
+
+.timeline-month {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--timeline-month-row);
+  color: var(--color-ink);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.timeline-month-label {
+  display: none;
+}
+
+/* Hoy: una línea en la misma x en el eje y en cada fila; la bandera sale de la línea */
+
+.timeline-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--timeline-today);
+  /* Corrimiento visual leve a la izquierda (≈1 día en escritorio); igual en eje y filas */
+  translate: -3px 0;
+  z-index: 2;
+}
+
+/* En el eje, la línea baja solo hasta la fila de meses: no se encima con el nombre del mes */
+.timeline-today--flag {
+  bottom: var(--timeline-month-row);
+}
+
+.timeline-today-label {
+  position: absolute;
+  top: 0;
+  left: -2px;
+  padding: 0.05rem 0.4rem 0.1rem;
+  border-radius: 0 0.25rem 0.25rem 0;
+  background: var(--timeline-today);
+  color: var(--color-on-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-snug);
+}
+
+/* Filas */
+
+.timeline-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-row {
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.timeline-name {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  font-variation-settings: var(--font-variation-body);
+}
+
+.timeline-track {
+  position: relative;
+  height: var(--timeline-track-height);
+  border-radius: var(--radius-sm);
+}
+
+/* Barras seguidas, sin encimarse; un filo del color de fondo separa una etapa de otra */
+.timeline-bar {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  box-shadow: 0 0 0 1.5px var(--color-bg);
+  container-type: inline-size;
+  color: var(--color-ink);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.timeline-bar--flat {
+  background: var(--timeline-flat);
+}
+
+.timeline-bar--pricking {
+  background: var(--timeline-pricking);
+}
+
+.timeline-bar--bed {
+  background: var(--timeline-bed);
+  /* Contorno fino: el verde té es claro y se perdería sobre el crema */
+  box-shadow:
+    0 0 0 1.5px var(--color-bg),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-primary-strong) 35%, transparent);
+  color: var(--color-primary-strong);
+}
+
+.timeline-bar--harvest {
+  background: var(--timeline-harvest);
+  color: var(--color-on-primary);
+}
+
+.timeline-bar-short {
+  display: none;
+}
+
+@container (max-width: 5.5rem) {
+  .timeline-bar-label {
+    display: none;
+  }
+
+  .timeline-bar-short {
+    display: inline;
+  }
+}
+
+@container (max-width: 2.25rem) {
+  .timeline-bar-short {
+    display: none;
+  }
+}
+
+/* Trasplante: línea de tinta con rombo */
+.timeline-anchor {
+  position: absolute;
+  top: -0.2rem;
+  bottom: -0.2rem;
+  width: 3px;
+  translate: -50% 0;
+  background: var(--color-ink);
+  z-index: 1;
+}
+
+.timeline-anchor::before {
+  content: '';
+  position: absolute;
+  top: -0.35rem;
+  left: 50%;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--color-ink);
+  border: 2px solid var(--color-bg);
+  translate: -50% 0;
+  rotate: 45deg;
+}
+
+.timeline-missing {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  margin-inline: 0.5rem;
+  padding: 0 0.35rem;
+  border: 1px dashed var(--color-ink-muted);
+  border-radius: 0.2rem;
+  background: var(--color-bg);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.timeline-missing--inside {
+  margin-inline: 0.35rem;
+  z-index: 1;
+}
+
+/* Resumen: solo trasplante y cosecha */
+
+.timeline-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-6);
+  margin: var(--space-2) 0 0;
+}
+
+.timeline-summary > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.timeline-summary strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.timeline-muted {
+  color: var(--color-ink-muted);
+  font-style: italic;
+}
+
+/* Escritorio */
+
+@media (min-width: 48rem) {
+  .timeline-axis,
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    column-gap: var(--space-4);
+  }
+
+  .timeline-axis-spacer {
+    display: block;
+  }
+
+  .timeline-month {
+    font-size: var(--text-sm);
+  }
+
+  .timeline-month-label {
+    display: inline;
+  }
+
+  .timeline-month-initial {
+    display: none;
+  }
+
+  .timeline-name {
+    grid-row: span 2;
+    margin: 0;
+    padding-top: 0.55rem;
+  }
+
+  .timeline-track,
+  .timeline-summary {
+    grid-column: 2;
+  }
+}

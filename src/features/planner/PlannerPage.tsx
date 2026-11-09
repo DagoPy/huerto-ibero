@@ -15,6 +15,7 @@ import {
 } from './columns'
 import { conditionLabels, methodLabels, seasonLabels, warningMessage } from './labels'
 import './PlannerPage.css'
+import { CropTimeline } from './timeline/CropTimeline'
 
 interface Planting {
   key: string
@@ -304,6 +305,19 @@ export function PlannerPage() {
           </table>
         </div>
       </section>
+
+      {rows.length > 0 && (
+        <section className="planner-section" aria-labelledby="timeline-title">
+          <h2 id="timeline-title">Línea de tiempo</h2>
+          <CropTimeline
+            entries={rows.map(({ planting, crop, schedule }) => ({
+              key: planting.key,
+              crop,
+              schedule,
+            }))}
+          />
+        </section>
+      )}
 
       <fieldset className="planner-section planner-condition">
         <legend>Condición de siembra</legend>
