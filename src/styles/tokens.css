@@ -1,0 +1,57 @@
+/* src/styles/tokens.css
+   Única fuente de verdad de diseño. Usar siempre var(--token); no escribir colores sueltos. */
+
+:root {
+  /* Paleta base (Coolors) */
+  --shamrock: #199d56;
+  --bright-fern: #58b142;
+  --sunflower-gold: #eeb543;
+  --eggshell: #f1edd6;
+  --tea-green: #d0e5c2;
+
+  /* Roles semánticos */
+  --color-bg: var(--eggshell);
+  --color-surface: color-mix(in srgb, var(--eggshell) 55%, white);
+  --color-surface-soft: var(--tea-green);
+  --color-primary: var(--shamrock);
+  /* Versión oscura: usar para botones con texto claro y para texto verde (contraste AA) */
+  --color-primary-strong: color-mix(in srgb, var(--shamrock) 70%, black);
+  --color-secondary: var(--bright-fern);
+  --color-accent: var(--sunflower-gold);
+  --color-on-primary: var(--eggshell);
+  --color-border: color-mix(in srgb, var(--color-primary-strong) 22%, transparent);
+  /* Borde de controles (inputs, selects): contraste mínimo 3:1 con el fondo */
+  --color-border-strong: color-mix(in srgb, var(--color-ink-muted) 75%, var(--eggshell));
+
+  /* Texto (derivado de la paleta: verde muy oscuro) */
+  --color-ink: color-mix(in srgb, var(--shamrock) 25%, black);
+  --color-ink-muted: color-mix(in srgb, var(--color-ink) 70%, var(--eggshell));
+
+  /* Estados */
+  --color-success: var(--color-primary-strong);
+  --color-warning: var(--sunflower-gold);
+  --color-danger: #b3402a; /* fuera de la paleta: ajustar si lo deseas */
+
+  /* Tipografía (definir familia al elegir la dirección visual) */
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+
+  /* Espaciado, radios y sombra */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-ink) 12%, transparent);
+
+  /* Movimiento */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+}

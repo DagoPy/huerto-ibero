@@ -59,6 +59,7 @@ src/
     planner/         # v1: planeador de fechas
     (irrigation/, bed-guide/, garden-map/ ... a futuro)
   shared/            # Componentes, hooks y utilidades reutilizables
+  styles/            # tokens.css (tokens de diseño)
   storage/           # (futuro) Persistencia (localStorage, export/import)
   app/               # Componente raíz; a futuro rutas, layout, providers
 ```
@@ -108,3 +109,14 @@ npm run build        # verificación de tipos + build de producción
 - [x] Condición de siembra para los valores con código `#`.
 - [ ] Guardar el plan en localStorage y exportar/importar.
 - [ ] Despliegue en GitHub Pages.
+
+## Diseño de interfaz
+
+- Estilos en CSS plano (sin Tailwind). Única fuente de diseño: `src/styles/tokens.css`.
+  Usar solo `var(--token)`; no escribir colores sueltos ni leer archivos de paleta.
+- El color nunca es la única señal (etapas, estados): acompañar con texto, icono o patrón.
+- Texto de interfaz en español; no inventar datos de cultivos ni textos agronómicos.
+- Mobile-first: verificar cada cambio visual con Playwright en 390px y en escritorio,
+  una captura por vista y solo al final de la iteración.
+- No instalar librerías de UI sin consultarme (usar /pick-ui-library).
+- Respetar prefers-reduced-motion. Movimiento solo como respuesta a una acción del usuario.
