@@ -330,10 +330,6 @@ export function PlannerPage() {
       {rows.length > 0 && (
         <section className="planner-section row-notes" aria-labelledby="notes-title">
           <h2 id="notes-title">Notas</h2>
-          <p className="hint">
-            La cosecha se estima contando las semanas a madurez del libro desde el trasplante a
-            la cama. "{NOT_GIVEN}": el libro no da ese tiempo (código D).
-          </p>
           <ul>
             {rows.map(({ planting, crop, propagation, schedule }) => (
               <li key={planting.key}>
