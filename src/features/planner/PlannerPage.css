@@ -64,6 +64,9 @@
 
 .add-crop-fields {
   display: grid;
+  /* minmax(0, …): sin él, la opción más larga del menú ensancha la columna y los
+     campos se salen de la tarjeta en móvil */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
 }
 
@@ -182,7 +185,7 @@
 
 @media (min-width: 48rem) {
   .add-crop-fields {
-    grid-template-columns: minmax(0, 18rem) minmax(0, 16rem) auto;
+    grid-template-columns: minmax(0, 18rem) minmax(0, 20rem) auto;
     justify-content: start;
     align-items: end;
   }
