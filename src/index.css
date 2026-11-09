@@ -2,8 +2,10 @@
 
 :root {
   color-scheme: light;
-  font-family: var(--font-sans);
-  line-height: 1.5;
+  font-family: var(--font-family);
+  font-variation-settings: var(--font-variation-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--leading-normal);
   color: var(--color-ink);
   background: var(--color-bg);
 }
@@ -38,7 +40,7 @@ button {
 
 button {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-on-primary);
   background-color: var(--color-primary-strong);
   border-color: var(--color-primary-strong);

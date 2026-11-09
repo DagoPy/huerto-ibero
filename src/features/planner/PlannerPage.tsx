@@ -49,9 +49,11 @@ function CropOptions() {
 
 /** Ventana de fechas; en escritorio el "hasta" baja a otra línea para no ensanchar la tabla. */
 function DateWindowText({ window }: { window: DateWindow }) {
-  if (window.earliest === window.latest) return formatDate(window.earliest)
+  if (window.earliest === window.latest) {
+    return <span className="date">{formatDate(window.earliest)}</span>
+  }
   return (
-    <span className="window">
+    <span className="window date">
       <span>{formatDate(window.earliest)}</span> <span>– {formatDate(window.latest)}</span>
     </span>
   )
