@@ -105,6 +105,7 @@ npm run build        # verificación de tipos + build de producción
 - [x] Modelo de dominio y cálculo de almácigos y cosecha ([docs](docs/dominio/calendario-de-siembra.md)).
 - [x] Catálogo de los 60 vegetales y hortalizas del libro (columnas D, E, H, L, M, R, S, T).
 - [x] UI mínima del planeador.
+- [x] Línea de tiempo visual por hortaliza (debajo de la tabla; `features/planner/timeline/`).
 - [ ] Composta y preparación de cama (faltan datos del libro).
 - [x] Condición de siembra para los valores con código `#`.
 - [ ] Guardar el plan en localStorage y exportar/importar.
