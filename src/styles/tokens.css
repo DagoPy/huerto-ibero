@@ -32,12 +32,35 @@
   --color-warning: var(--sunflower-gold);
   --color-danger: #b3402a; /* fuera de la paleta: ajustar si lo deseas */
 
-  /* Tipografía (definir familia al elegir la dirección visual) */
-  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Tipografía: "Letrero del huerto" (docs/decisiones/0002-tipografia.md).
+     Una sola familia variable, Recursive; cada rol cambia sus ejes, no la familia.
+     Fuente autoalojada con @fontsource-variable/recursive (importada en main.tsx). */
+  --font-family: "Recursive Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Título y encabezados de sección: casual, como letrero pintado a mano */
+  --font-variation-display: "CASL" 1, "MONO" 0;
+  /* Texto de interfaz y encabezados de tabla: sans lineal */
+  --font-variation-body: "CASL" 0, "MONO" 0;
+  /* Fechas: monoespaciada, dd/mm/aa alineadas como en una bitácora */
+  --font-variation-data: "CASL" 0, "MONO" 1;
+
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 800;
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+
+  /* Escala tipográfica. Base 16px (no bajar en campos: iOS hace zoom).
+     Hacia arriba es modular: razón 1.2 a 390px que crece hasta 1.25 a 1280px.
+     Hacia abajo se fija para no perder legibilidad. */
+  --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.75rem;
+  --text-md: clamp(1.2rem, 1.178rem + 0.09vw, 1.25rem);
+  --text-lg: clamp(1.44rem, 1.386rem + 0.22vw, 1.5625rem);
+  --text-xl: clamp(1.728rem, 1.629rem + 0.4vw, 1.953rem);
+  --text-2xl: clamp(2.074rem, 1.913rem + 0.66vw, 2.441rem);
 
   /* Espaciado, radios y sombra */
   --space-1: 0.25rem;
@@ -46,6 +69,8 @@
   --space-4: 1rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
+  /* Altura común de campos, menús y botones (ver media query de pantallas táctiles) */
+  --control-height: 2.25rem;
   --radius-sm: 0.5rem;
   --radius-md: 0.875rem;
   --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-ink) 12%, transparent);
@@ -54,4 +79,11 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --duration-fast: 150ms;
   --duration-base: 220ms;
+}
+
+/* Pantallas táctiles: objetivos de al menos 44px */
+@media (pointer: coarse) {
+  :root {
+    --control-height: 2.75rem;
+  }
 }
